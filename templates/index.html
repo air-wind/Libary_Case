@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <form method="post">
+        {{ form.csrf_token }}
+{#        作者信息#}
+        {{ form.author.label }}
+        <p>{{ form.author }}</p>
+        {% for msg in form.author.errors %}
+        {{ msg }}
+        {% endfor %}
+
+        {{ form.book.label }}
+        <p>{{ form.book }}</p>
+        {% for msg in form.book.errors %}
+        {{ msg }}
+        {% endfor %}
+
+        {{ form.submit }}
+    </form>
+
+    <hr>
+    {% for book_info in books_info %}
+        <p>书籍: {{ book_info.book }}</p>
+        <p>作者: {{ book_info.author }}</p>
+    {% endfor %}
+
+</body>
+</html>
