@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, g, url_for, redirect, flash
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
@@ -40,13 +40,20 @@ class BookSubmit(FlaskForm):
     submit = SubmitField(label="提交")
 
 # 路由
-@app.route('/')
+@app.route('/', methods=["GET", "POST"])
 def index():
     form = BookSubmit()
+    if form.validate_on_submit():
+        book =  form.book.data
+        author = form.author.data
+        add_book(book, author)
+
+
     book_li = Book.query.filter_by(is_del=False).all()
     books_info = list()
     for book in book_li:
         book_info = {
+            "book_id": book.id,
             "book": book.book,
             "author": book.author.author
         }
@@ -56,9 +63,34 @@ def index():
         "form": form,
         "books_info": books_info
     }
-    if form.validate_on_submit():
-        pass
     return render_template("index.html", **data)
+
+@app.route("/delete/<int:bookid>")
+def delete(bookid):
+    Book.query.filter_by(id=bookid).update({"is_del": True})
+    db.session.commit()
+    return redirect(url_for("index"))
+
+def add_book(book, author):
+    # 判断书籍是否存在
+    flag = Book.query.filter_by(book=book).first()
+    if flag is None:
+        #不存在
+        # 向数据库中添加信息
+        curent_author = Author(author=author)
+        db.session.add(curent_author)
+        db.session.commit()
+        curent_book = Book(book=book, author_id = curent_author.id)
+        db.session.add(curent_book)
+        db.session.commit()
+    else:
+        #存在
+        if flag.is_del:
+            flag.is_del = False
+            db.session.add(flag)
+            db.session.commit()
+        else:
+            flash("已经存在!")
 
 
 if __name__ == '__main__':

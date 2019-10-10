@@ -23,11 +23,19 @@
         {{ form.submit }}
     </form>
 
-    <hr>
-    {% for book_info in books_info %}
-        <p>书籍: {{ book_info.book }}</p>
-        <p>作者: {{ book_info.author }}</p>
+    {% for msg in get_flashed_messages()%}
+        {{ msg }}
     {% endfor %}
+
+    <hr>
+    <ul>
+    {% for book_info in books_info %}
+        <li>书籍: {{ book_info.book }}</li>
+        <p>作者: {{ book_info.author }}</p>
+        <p><a href="/delete/{{ book_info.book_id }}">删除{{ book_info.book }}</a></p>
+
+    {% endfor %}
+    </ul>
 
 </body>
 </html>
