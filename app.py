@@ -3,11 +3,24 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_sqlalchemy import SQLAlchemy
+from flask_script import Manager
+from flask_migrate import Migrate, MigrateCommand
 import pymysql
 pymysql.install_as_MySQLdb()
 
 
 app = Flask(__name__)
+# 创建数据库管理类
+db = SQLAlchemy(app)
+
+# 创建flask脚本管理类
+manager = Manager(app)
+
+# 创建数据库迁移类
+Migrate(app, db)
+
+# 将数据库迁移命令添加到脚本
+manager.add_command("db", MigrateCommand)
 
 # 配置类
 class Config():
@@ -17,13 +30,13 @@ class Config():
 
 app.config.from_object(Config)
 
-# 数据类
-db = SQLAlchemy(app)
+# 创建数据库模型
 class Author(db.Model):
     __tablename__ = "fb_author"
     id = db.Column(db.Integer, primary_key=True)
     author = db.Column(db.String(30), unique=True)
     book = db.relation("Book", backref="author")
+    mobile = db.Column(db.String(12), unique=True)
 
 class Book(db.Model):
     __tablename__ = "fb_book"
@@ -108,4 +121,4 @@ if __name__ == '__main__':
     # bk_san = Book(book='冰火魔厨', author_id=au_san.id)
     # db.session.add_all([bk_xi, bk_xi2, bk_qian, bk_san])
     # db.session.commit()
-    app.run()
+    manager.run()
